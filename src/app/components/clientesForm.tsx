@@ -1,76 +1,102 @@
 "use client";
-
-// components/ClientsForm.tsx
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Cliente } from "../types/client";
 
-const ClientsForm = () => {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+const clientSchema = z.object({
+  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+  email: z.string().email("Email inválido"),
+  status: z.boolean().default(true),
+});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+type ClientFormData = z.infer<typeof clientSchema>;
 
-    const newClient = { nome, email };
+export default function ClientsForm({ cliente }: { cliente?: Cliente }) {
+  const queryClient = useQueryClient();
+  const isEditMode = !!cliente;
 
-    try {
-      const response = await fetch("http://localhost:3000/clientes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newClient),
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ClientFormData>({
+    resolver: zodResolver(clientSchema),
+    defaultValues: cliente || {
+      nome: "",
+      email: "",
+      status: true,
+    },
+  });
+
+  // Corrigindo a tipagem da mutation
+  const mutation = useMutation<Cliente, Error, ClientFormData>({
+    mutationFn: async (data) => {
+      const url = isEditMode
+        ? `http://localhost:3000/clientes/${cliente.id}`
+        : "http://localhost:3000/clientes";
+
+      const method = isEditMode ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const cliente = await response.json();
-        console.log("Cliente criado:", cliente);
-        setNome("");
-        setEmail("");
-      } else {
-        console.error("Erro ao criar cliente");
-      }
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-    } finally {
-      setLoading(false);
-    }
+      if (!response.ok) throw new Error("Erro ao salvar cliente");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientes"] }); // Corrigindo invalidação
+      reset();
+    },
+  });
+
+  // Corrigindo o handler do submit
+  const onSubmit = (data: ClientFormData) => {
+    mutation.mutate(data);
   };
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">Criar Novo Cliente</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h2 className="text-xl font-semibold mb-4">
+        {isEditMode ? "Editar Cliente" : "Criar Novo Cliente"}
+      </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <Label htmlFor="nome">Nome:</Label>
-          <Input
-            type="text"
-            id="nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            required
-          />
+          <Label>Nome</Label>
+          <Input {...register("nome")} />
+          {errors.nome && (
+            <p className="text-red-500 text-sm">
+              {errors.nome.message!} {/* Adicionando non-null assertion */}
+            </p>
+          )}
         </div>
+
         <div>
-          <Label htmlFor="email">Email:</Label>
-          <Input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <Label>Email</Label>
+          <Input {...register("email")} type="email" />
+          {errors.email && (
+            <p className="text-red-500 text-sm">
+              {errors.email.message!} {/* Adicionando non-null assertion */}
+            </p>
+          )}
         </div>
-        <Button variant="default" type="submit" disabled={loading}>
-          {loading ? "Criando..." : "Criar Cliente"}
+
+        <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending
+            ? "Salvando..."
+            : isEditMode
+            ? "Atualizar"
+            : "Criar"}
         </Button>
       </form>
     </div>
   );
-};
-
-export default ClientsForm;
+}

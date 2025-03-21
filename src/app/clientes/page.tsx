@@ -1,17 +1,17 @@
-// pages/clientes/page.tsx
-// import ClientsForm from "../components/clientesForm";
 import ClientsTable from "../components/clientesTable";
+import ClientsForm from "../components/clientesForm";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
-const ClientesPage = () => {
+export default function ClientesPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Clientes</h1>
-      {/* Formulário para criar novo cliente */}
-
-      {/* Tabela com a listagem de clientes */}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <Dialog>
+          <DialogTrigger asChild></DialogTrigger>
+          <ClientsForm />
+        </Dialog>
+      </div>
       <ClientsTable />
     </div>
   );
-};
-
-export default ClientesPage;
+}
