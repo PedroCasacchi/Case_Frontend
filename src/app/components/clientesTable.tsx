@@ -13,14 +13,12 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import type { Cliente } from "../types/client";
 
-// Função para buscar os clientes e seus ativos
 const fetchClientes = async () => {
   const response = await fetch("http://localhost:3000/clientes");
   if (!response.ok) throw new Error("Erro ao buscar clientes");
   return response.json();
 };
 
-// Função para editar um cliente
 const editCliente = async (cliente: Cliente) => {
   const clienteData = {
     nome: cliente.nome,
@@ -44,7 +42,6 @@ const editCliente = async (cliente: Cliente) => {
   return response.json();
 };
 
-// Função para ativar ou inativar um cliente
 const toggleClienteStatus = async ({
   id,
   currentStatus,
@@ -69,13 +66,11 @@ const ClientsTable = () => {
   const [formData, setFormData] = useState<Cliente | null>(null);
   const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
 
-  // Query para buscar clientes
   const { data, isLoading, isError } = useQuery({
     queryKey: ["clientes"],
     queryFn: fetchClientes,
   });
 
-  // Mutation para deletar cliente
   const deleteMutation = useMutation<void, Error, number>({
     mutationFn: async (id: number) => {
       const response = await fetch(`http://localhost:3000/clientes/${id}`, {
@@ -88,13 +83,12 @@ const ClientsTable = () => {
     },
   });
 
-  // Mutation para editar cliente
   const updateMutation = useMutation({
     mutationFn: editCliente,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
       setEditingCliente(null);
-      setFormData(null); // Limpar o estado do formulário após sucesso
+      setFormData(null);
     },
     onError: (error) => {
       console.error("Erro na atualização:", error);
@@ -102,7 +96,6 @@ const ClientsTable = () => {
     },
   });
 
-  // Mutation para ativar ou inativar cliente
   const toggleStatusMutation = useMutation({
     mutationFn: toggleClienteStatus,
     onSuccess: () => {
@@ -133,16 +126,16 @@ const ClientsTable = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData) {
-      updateMutation.mutate(formData); // Atualiza o cliente
+      updateMutation.mutate(formData);
     }
   };
 
   const handleViewAtivos = (cliente: Cliente) => {
-    setSelectedClient(cliente); // Seleciona o cliente e exibe os ativos dele
+    setSelectedClient(cliente);
   };
 
   const handleCloseAtivos = () => {
-    setSelectedClient(null); // Fecha a visualização dos ativos
+    setSelectedClient(null);
   };
 
   if (isLoading) return <p>Carregando...</p>;
@@ -155,9 +148,9 @@ const ClientsTable = () => {
         {data?.map((cliente: Cliente) => (
           <li
             key={cliente.id}
-            className="flex justify-between items-center border p-2 rounded"
+            className="flex justify-between items-center border p-2 rounded relative"
           >
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 flex-grow">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{cliente.nome}</span>
                 <span
@@ -172,7 +165,7 @@ const ClientsTable = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 items-center ml-4">
+            <div className="flex gap-2 items-center justify-end ml-4 flex-shrink-0 w-[580px]">
               <Dialog
                 open={editingCliente?.id === cliente.id}
                 onOpenChange={(open) => !open && setEditingCliente(null)}
@@ -182,6 +175,7 @@ const ClientsTable = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleEditClick(cliente)}
+                    className="min-w-[80px]"
                   >
                     Editar
                   </Button>
@@ -228,6 +222,7 @@ const ClientsTable = () => {
                 variant="destructive"
                 size="sm"
                 onClick={() => deleteMutation.mutate(cliente.id)}
+                className="min-w-[80px]"
               >
                 Excluir
               </Button>
@@ -240,6 +235,7 @@ const ClientsTable = () => {
                     currentStatus: cliente.status,
                   })
                 }
+                className="min-w-[100px]"
               >
                 {cliente.status ? "Inativar" : "Ativar"}
               </Button>
@@ -247,6 +243,7 @@ const ClientsTable = () => {
                 variant="secondary"
                 size="sm"
                 onClick={() => handleViewAtivos(cliente)}
+                className="min-w-[100px]"
               >
                 Ver Ativos
               </Button>
@@ -255,7 +252,6 @@ const ClientsTable = () => {
         ))}
       </ul>
 
-      {/* Modal ou seção para exibir os ativos do cliente */}
       {selectedClient && (
         <Dialog open={true} onOpenChange={() => handleCloseAtivos()}>
           <DialogContent>
