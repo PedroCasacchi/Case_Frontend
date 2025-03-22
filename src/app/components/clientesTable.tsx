@@ -1,5 +1,4 @@
 "use client";
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,24 +44,22 @@ const editCliente = async (cliente: Cliente) => {
   return response.json();
 };
 
-// Função para ativar um cliente
-const activateCliente = async (id: number) => {
-  const response = await fetch(`http://localhost:3000/clientes/ativar/${id}`, {
-    method: "PUT",
-  });
-  if (!response.ok) throw new Error("Falha ao ativar cliente");
-  return response.json();
-};
-
-// Função para inativar um cliente
-const deactivateCliente = async (id: number) => {
+// Função para ativar ou inativar um cliente
+const toggleClienteStatus = async ({
+  id,
+  currentStatus,
+}: {
+  id: number;
+  currentStatus: boolean;
+}) => {
+  const action = currentStatus ? "inativar" : "ativar";
   const response = await fetch(
-    `http://localhost:3000/clientes/inativar/${id}`,
+    `http://localhost:3000/clientes/${action}/${id}`,
     {
       method: "PUT",
     }
   );
-  if (!response.ok) throw new Error("Falha ao inativar cliente");
+  if (!response.ok) throw new Error(`Falha ao ${action} cliente`);
   return response.json();
 };
 
@@ -105,20 +102,9 @@ const ClientsTable = () => {
     },
   });
 
-  // Mutation para ativar cliente
-  const activateMutation = useMutation({
-    mutationFn: activateCliente,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clientes"] });
-    },
-    onError: (error) => {
-      alert(error instanceof Error ? error.message : "Erro desconhecido");
-    },
-  });
-
-  // Mutation para inativar cliente
-  const deactivateMutation = useMutation({
-    mutationFn: deactivateCliente,
+  // Mutation para ativar ou inativar cliente
+  const toggleStatusMutation = useMutation({
+    mutationFn: toggleClienteStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clientes"] });
     },
@@ -171,20 +157,22 @@ const ClientsTable = () => {
             key={cliente.id}
             className="flex justify-between items-center border p-2 rounded"
           >
-            <div>
-              <span className="mr-2">{cliente.nome}</span>
-              <span
-                className={`text-xs px-2 py-1 rounded ${
-                  cliente.status
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {cliente.status ? "Ativo" : "Inativo"}
-              </span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{cliente.nome}</span>
+                <span
+                  className={`text-xs px-2 py-1 rounded ${
+                    cliente.status
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {cliente.status ? "Ativo" : "Inativo"}
+                </span>
+              </div>
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center ml-4">
               <Dialog
                 open={editingCliente?.id === cliente.id}
                 onOpenChange={(open) => !open && setEditingCliente(null)}
@@ -246,18 +234,14 @@ const ClientsTable = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => activateMutation.mutate(cliente.id)}
-                disabled={cliente.status}
+                onClick={() =>
+                  toggleStatusMutation.mutate({
+                    id: cliente.id,
+                    currentStatus: cliente.status,
+                  })
+                }
               >
-                Ativar
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => deactivateMutation.mutate(cliente.id)}
-                disabled={!cliente.status}
-              >
-                Inativar
+                {cliente.status ? "Inativar" : "Ativar"}
               </Button>
               <Button
                 variant="secondary"

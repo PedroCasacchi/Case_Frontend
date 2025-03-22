@@ -15,6 +15,7 @@ type Ativo = {
   id: number;
   nome: string;
   valor: number;
+  clienteId: number; // Usando clienteId ao invés de cliente completo
 };
 
 const fetchAtivos = async (): Promise<Ativo[]> => {
@@ -51,6 +52,8 @@ export default function AssetsPage() {
               <TableRow>
                 <TableHead>Ativo</TableHead>
                 <TableHead>Valor Atual</TableHead>
+                <TableHead>ID do Cliente</TableHead>{" "}
+                {/* Exibindo o clienteId */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,6 +66,8 @@ export default function AssetsPage() {
                       currency: "BRL",
                     }).format(ativo.valor)}
                   </TableCell>
+                  <TableCell>{ativo.clienteId}</TableCell>{" "}
+                  {/* Exibindo o clienteId */}
                 </TableRow>
               ))}
             </TableBody>
