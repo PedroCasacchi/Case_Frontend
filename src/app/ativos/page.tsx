@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import CreateAtivo from "./components/ativosCreate"; // Certifique-se de que o caminho está correto
 
 type Ativo = {
   id: number;
@@ -44,7 +45,12 @@ export default function AssetsPage() {
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle>Ativos Financeiros</CardTitle>
+          <div className="flex justify-between items-center gap-2">
+            {" "}
+            {/* Use gap-2 para espaçamento menor */}
+            <CardTitle>Ativos Financeiros</CardTitle>
+            <CreateAtivo />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
