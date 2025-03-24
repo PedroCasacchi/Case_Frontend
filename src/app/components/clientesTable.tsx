@@ -243,7 +243,12 @@ const ClientsTable = () => {
                 variant="secondary"
                 size="sm"
                 onClick={() => handleViewAtivos(cliente)}
-                className="min-w-[100px]"
+                className={`min-w-[100px] ${
+                  !cliente.ativos || cliente.ativos.length === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                disabled={!cliente.ativos || cliente.ativos.length === 0}
               >
                 Ver Ativos
               </Button>
