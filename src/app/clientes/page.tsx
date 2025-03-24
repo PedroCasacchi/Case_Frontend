@@ -7,7 +7,6 @@ export default function ClientesPage() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Dialog>
         <DialogTrigger asChild>
-          {/* Trigger do botão ou outro elemento para abrir o formulário */}
         </DialogTrigger>
         <ClientsForm />
       </Dialog>

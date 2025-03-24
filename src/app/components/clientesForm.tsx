@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { Cliente } from "../types/client";
 import { useState } from "react";
 
-// Schema de validação com Zod
+// Schema de validação Zod
 const clientSchema = z.object({
   nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z.string().email("Email inválido"),

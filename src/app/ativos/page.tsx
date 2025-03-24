@@ -10,13 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import CreateAtivo from "./components/ativosCreate"; // Certifique-se de que o caminho está correto
+import CreateAtivo from "./components/ativosCreate";
 
 type Ativo = {
   id: number;
   nome: string;
   valor: number;
-  clienteId: number; // Usando clienteId ao invés de cliente completo
+  clienteId: number; // Usando clienteId
 };
 
 const fetchAtivos = async (): Promise<Ativo[]> => {
@@ -47,7 +47,6 @@ export default function AssetsPage() {
         <CardHeader>
           <div className="flex justify-between items-center gap-2">
             {" "}
-            {/* Use gap-2 para espaçamento menor */}
             <CardTitle>Ativos Financeiros</CardTitle>
             <CreateAtivo />
           </div>
@@ -59,7 +58,6 @@ export default function AssetsPage() {
                 <TableHead>Ativo</TableHead>
                 <TableHead>Valor Atual</TableHead>
                 <TableHead>ID do Cliente</TableHead>{" "}
-                {/* Exibindo o clienteId */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,7 +71,6 @@ export default function AssetsPage() {
                     }).format(ativo.valor)}
                   </TableCell>
                   <TableCell>{ativo.clienteId}</TableCell>{" "}
-                  {/* Exibindo o clienteId */}
                 </TableRow>
               ))}
             </TableBody>
